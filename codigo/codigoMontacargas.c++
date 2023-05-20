@@ -23,7 +23,8 @@
 
 int piso = 0;
 bool sistemaPausado = true;
-bool subir = false;
+bool sistemaSubiendo = false;
+bool sistemaBajando = false;
 bool ledRojoPrendido = false;
 bool ledVerdePrendido = false;
 
@@ -45,13 +46,7 @@ void setup()
 }
 
 void loop()
-{ 
-    int estadoPulsadorSubir = digitalRead(PULSADOR_SUBIR); 
-    int estadoPulsadorBajar = digitalRead(PULSADOR_BAJAR); 
-    int estadoPulsadorPausar = digitalRead(PULSADOR_PAUSAR);
-    
-    cambiarEstadoMontacargas(estadoPulsadorPausar, estadoPulsadorSubir, estadoPulsadorBajar);
-    
+{   
     if(sistemaPausado == true)
     {
         prenderLed(LED_ROJO);
@@ -59,48 +54,59 @@ void loop()
     }
     else
     {
-        prenderLed(LED_VERDE);
-        apagarLed(LED_ROJO);
         subirBajarPisos();
+        if(sistemaPausado == false)
+        {
+            prenderLed(LED_VERDE);
+            apagarLed(LED_ROJO);
+        }
     }
     
     Serial.print("Esta en el piso: ");
     mostrarPisoVisualizador(piso);
     
-    delay(3000);
+    permitirCambioPisosPorTiempo(3000);
 }
 
-void cambiarEstadoMontacargas(int estadoPulsadorPausar, int estadoPulsadorSubir, int estadoPulsadorBajar)
+void cambiarEstadoMontacargas()
 {
+    int estadoPulsadorSubir = digitalRead(PULSADOR_SUBIR); 
+    int estadoPulsadorBajar = digitalRead(PULSADOR_BAJAR); 
+    int estadoPulsadorPausar = digitalRead(PULSADOR_PAUSAR);
+    
     if(estadoPulsadorPausar == HIGH)
     {
-        if(sistemaPausado = false)
+        if(sistemaPausado == false)
         {
             Serial.println("MONTACARGAS PAUSADO");
         }
+        sistemaSubiendo = false;
+        sistemaBajando = false;
         sistemaPausado = true;
     }
     else
     {
         if(estadoPulsadorSubir == HIGH)
         {
-            sistemaPausado = false;
-            if(subir == false)
+            if(sistemaSubiendo == false)
             {
                 Serial.println("MONTACARGAS SUBIENDO");
             }
-            subir = true;
+            sistemaPausado = false;
+            sistemaBajando = false;
+            sistemaSubiendo = true;
         }
         else
         {
             if(estadoPulsadorBajar == HIGH)
             {
-                sistemaPausado = false;
-                if(subir == true)
+                if(sistemaBajando == false)
                 {
                     Serial.println("MONTACARGAS BAJANDO");
                 }
-                subir = false;
+                sistemaPausado = false;
+                sistemaSubiendo = false;
+                sistemaBajando = true;
             }
         }
     }
@@ -108,20 +114,30 @@ void cambiarEstadoMontacargas(int estadoPulsadorPausar, int estadoPulsadorSubir,
 
 void subirBajarPisos()
 {
-    if(subir == true and piso != 9)
+    if(sistemaSubiendo == true and piso != 9)
     {
         piso++;
     }
     else
     {
-        if(subir == false and piso != 0)
+        if(sistemaBajando == true and piso != 0)
         {
             piso--;
         }
         else
         {
             sistemaPausado = true;
+            Serial.println("MONTACARGAS PAUSADO");
         }
+    }
+}
+
+void permitirCambioPisosPorTiempo(int tiempo)
+{
+    for(int i = 0; i < tiempo; i+=50)
+    {
+        delay(50);
+        cambiarEstadoMontacargas();
     }
 }
 
@@ -200,7 +216,7 @@ void mostrarPisoVisualizador(int piso)
             Serial.println("2");
             encenderOApagarLedsSieteSegmentos(1,1,0,1,1,0,1);
         break;
-        
+
         case 3:
             Serial.println("3");
             encenderOApagarLedsSieteSegmentos(1,1,1,1,0,0,1);

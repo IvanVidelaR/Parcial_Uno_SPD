@@ -34,37 +34,45 @@ segmentos.
 El código hace uso de varias funciones para controlar el visualizador 7 segmentos, las leds y los pulsadores. La función cambiarEstadoMontacargas se encarga de cambiar el estado del montacargas al presionar el pulsador correspondiente, además de mostrar en pantalla el estado actual del montacargas.
 
 ~~~ C (lenguaje en el que esta escrito)
-void cambiarEstadoMontacargas(int estadoPulsadorPausar, int estadoPulsadorSubir, int estadoPulsadorBajar)
+void cambiarEstadoMontacargas()
 {
+    int estadoPulsadorSubir = digitalRead(PULSADOR_SUBIR); 
+    int estadoPulsadorBajar = digitalRead(PULSADOR_BAJAR); 
+    int estadoPulsadorPausar = digitalRead(PULSADOR_PAUSAR);
+    
     if(estadoPulsadorPausar == HIGH)
     {
-        if(sistemaPausado = false)
+        if(sistemaPausado == false)
         {
             Serial.println("MONTACARGAS PAUSADO");
         }
+        sistemaSubiendo = false;
+        sistemaBajando = false;
         sistemaPausado = true;
     }
     else
     {
         if(estadoPulsadorSubir == HIGH)
         {
-            sistemaPausado = false;
-            if(subir == false)
+            if(sistemaSubiendo == false)
             {
                 Serial.println("MONTACARGAS SUBIENDO");
             }
-            subir = true;
+            sistemaPausado = false;
+            sistemaBajando = false;
+            sistemaSubiendo = true;
         }
         else
         {
             if(estadoPulsadorBajar == HIGH)
             {
-                sistemaPausado = false;
-                if(subir == true)
+                if(sistemaBajando == false)
                 {
                     Serial.println("MONTACARGAS BAJANDO");
                 }
-                subir = false;
+                sistemaPausado = false;
+                sistemaSubiendo = false;
+                sistemaBajando = true;
             }
         }
     }
@@ -77,20 +85,34 @@ La función subirBajarPisos se encarga de aumentar un piso si es que el usuario 
 ~~~ C (lenguaje en el que esta escrito)
 void subirBajarPisos()
 {
-    if(subir == true and piso != 9)
+    if(sistemaSubiendo == true and piso != 9)
     {
         piso++;
     }
     else
     {
-        if(subir == false and piso != 0)
+        if(sistemaBajando == true and piso != 0)
         {
             piso--;
         }
         else
         {
             sistemaPausado = true;
+            Serial.println("MONTACARGAS PAUSADO");
         }
+    }
+}
+~~~
+
+La función permitirCambioPisosPorTiempo se encarga de aplicar un delay del tiempo pasado por parametro, en este caso el trayecto entre pisos va a ser de 3000 ms pero lo hace manualmente está función, para que pueda leer en cualquier momento de ejecución del programa que el pulsador se haya pulsado, para ello también hace llamado a la función cambiarEstadoMontacargas, para que durante todo ese tiempo este leyendo si se presiona algún pulsador o no. 
+
+~~~ C (lenguaje en el que esta escrito)
+void permitirCambioPisosPorTiempo(int tiempo)
+{
+    for(int i = 0; i < tiempo; i+=50)
+    {
+        delay(50);
+        cambiarEstadoMontacargas();
     }
 }
 ~~~
@@ -220,17 +242,13 @@ void mostrarPisoVisualizador(int piso)
 }
 ~~~
 
-En el loop principal del código se lee el estado de cada pulsador, se llama a la función cambiarEstadoMontacargas, para saber si el montacargas debe subir, bajar o pausarse, si el sistema esta pausado se prende la led roja y apaga la led verde, esto llamando a las funciones prenderLed y apagarLed, si no está pausado, se hace al revés y llama a la función subirBajarPisos, si se está subiendo se suma un piso, si no se resta y si se llega al ultimo piso o al primero se pausa el montacargas. También se muestra en que piso está por consola y por el visualizador, todo con un delay de 3000ms, que es el trayecto entre pisos. 
+En el loop principal del código si el sistema está pausado la led roja se prende y la led verde se apaga, con sus respectivas funciones prenderLed y apagarLed, en caso de que el sistema no se encuentre pausado se llama a la función subirBajarPisos, la cual se encarga de aumentar el contador de pisos por uno si está subiendo o disminuirlo por uno si está bajando, y si llega al último o primer piso pausarlo, luego se vuelve a preguntar si el sistema se encuentra pausado, por esto último, y si no se encuentra pausado se prende la luz verde y apaga la roja.
+Luego se hace uso de la función mostrarPisoVisualizador para mostrar en que piso se encuentra.
+Por último hace uso de la función permitirCambioPisosPorTiempo para aplicar el tiempo de trayecto por piso, dentro de ella llamando a la función cambiarEstadoMontacargas, para saber en todo momento si se hace presión de algún pulsador, para delimitar si el montacargas debe subir, bajar o pausarse.
 
 ~~~ C (lenguaje en el que esta escrito)
 void loop()
 { 
-    int estadoPulsadorSubir = digitalRead(PULSADOR_SUBIR); 
-    int estadoPulsadorBajar = digitalRead(PULSADOR_BAJAR); 
-    int estadoPulsadorPausar = digitalRead(PULSADOR_PAUSAR);
-    
-    cambiarEstadoMontacargas(estadoPulsadorPausar, estadoPulsadorSubir, estadoPulsadorBajar);
-    
     if(sistemaPausado == true)
     {
         prenderLed(LED_ROJO);
@@ -238,15 +256,18 @@ void loop()
     }
     else
     {
-        prenderLed(LED_VERDE);
-        apagarLed(LED_ROJO);
-        subirBajarPisos();
+       subirBajarPisos();
+        if(sistemaPausado == false)
+        {
+            prenderLed(LED_VERDE);
+            apagarLed(LED_ROJO);
+        }
     }
     
     Serial.print("Esta en el piso: ");
     mostrarPisoVisualizador(piso);
     
-    delay(3000);
+    permitirCambioPisosPorTiempo(3000);
 }
 
 ~~~
