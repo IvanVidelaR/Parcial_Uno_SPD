@@ -40,7 +40,7 @@ segmentos.
 - D2 RED (LED Roja): El ánodo del LED está conectado a una resistencia (R2) de 220 Ohms y a la salida digital D12 del Arduino Uno (U1) El cátodo está conectado a GND (tierra) del U1. Cuando la salida digital D12 está en estado alto (HIGH/1), se aplica un voltaje a través del LED, lo que lo enciende y emite luz roja, si está en estado bajo (LOW/0) no se le aplica voltaje, lo que lo apaga y no emite luz.
 
 #### VISUALIZADOR 7 SEGMENTOS - DIGIT 1:
-El visualizador consta de 7 segmentos (A-G), que se encienden para formar diferentes números o caracteres, para mostrarlos se encienden los segmentos correspondientes (HIGH/1) o apagan (LOW/0)
+El visualizador consta de 7 segmentos (A-G), que se encienden para formar diferentes números o caracteres, para mostrarlos se encienden los segmentos correspondientes (HIGH/1) o apagan (LOW/0).
 - a = Segmento "A" conectado con una resistencia (R3) de 220 ohms al pin D10 (salida digital) del Arduino Uno (U1).
 - b = Segmento "B" conectado con una resistencia (R4) de 220 ohms al pin D9 (salida digital) del Arduino Uno (U1).
 - c = Segmento "C" conectado con una resistencia (R5) de 220 ohms al pin D8 (salida digital) del Arduino Uno (U1).
@@ -51,10 +51,9 @@ El visualizador consta de 7 segmentos (A-G), que se encienden para formar difere
 - K = "Común" conectado a GND (tierra) del Arduino Uno (U1).
 
 ##### PULSADORES:
-S3 = Utiliza una configuración pull down, es decir que al ser presionado la entrada analógica correspondiente detecta un cambio de voltaje. (HIGH/1) Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R10) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A0 (entrada analógica) del Arduino Uno (U1).
-S2 = Se utiliza una configuración pull down, al igual que en S3.
-Terminal 2b conectada a 5V del U1- Terminal 1b conectada con una resistencia (R11) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A1 (entrada analógica) del Arduino Uno (U1).
-S1 = Se utiliza una configuración pull down, al igual que en S3. Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R12) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A2 (entrada analógica) del Arduino Uno (U1).
+- S3 = Utiliza una configuración pull down, es decir que al ser presionado la entrada analógica correspondiente detecta un cambio de voltaje. (HIGH/1). Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R10) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A0 (entrada analógica) del Arduino Uno (U1).
+- S2 = Se utiliza una configuración pull down, al igual que en S3. Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R11) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A1 (entrada analógica) del Arduino Uno (U1).
+- S1 = Se utiliza una configuración pull down, al igual que en S3. Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R12) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A2 (entrada analógica) del Arduino Uno (U1).
 
 ## Función principal
 
