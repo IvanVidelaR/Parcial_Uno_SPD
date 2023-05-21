@@ -29,6 +29,33 @@ segmentos.
 - Presentar el código fuente del proyecto de Arduino listo para ser implementado.
 - Deberán explicar el funcionamiento integral utilizando documentación MarkDown.
 
+## Diagrama esquemático del circuito
+![Tinkercad](./img/diagramaEsquematicoP1.jpg)
+![Tinkercad](./img/diagramaEsquematicoP2.jpg)
+
+### Funcionamiento aplicado de cada componente: 
+
+#### LEDS:
+- D1 GREEN (LED Verde): El ánodo del LED está conectado a una resistencia (R1) de 220 Ohms y a la salida digital D11 del Arduino Uno (U1). El cátodo está conectado a GND (tierra) del U1. Cuando la salida digital D11 está en estado alto (HIGH/1), se aplica un voltaje a través del LED, lo que lo enciende y emite luz verde, si está en estado bajo (LOW/0) no se le aplica voltaje, lo que lo apaga y no emite luz.
+- D2 RED (LED Roja): El ánodo del LED está conectado a una resistencia (R2) de 220 Ohms y a la salida digital D12 del Arduino Uno (U1) El cátodo está conectado a GND (tierra) del U1. Cuando la salida digital D12 está en estado alto (HIGH/1), se aplica un voltaje a través del LED, lo que lo enciende y emite luz roja, si está en estado bajo (LOW/0) no se le aplica voltaje, lo que lo apaga y no emite luz.
+
+#### VISUALIZADOR 7 SEGMENTOS - DIGIT 1:
+El visualizador consta de 7 segmentos (A-G), que se encienden para formar diferentes números o caracteres, para mostrarlos se encienden los segmentos correspondientes (HIGH/1) o apagan (LOW/0)
+- a = Segmento "A" conectado con una resistencia (R3) de 220 ohms al pin D10 (salida digital) del Arduino Uno (U1).
+- b = Segmento "B" conectado con una resistencia (R4) de 220 ohms al pin D9 (salida digital) del Arduino Uno (U1).
+- c = Segmento "C" conectado con una resistencia (R5) de 220 ohms al pin D8 (salida digital) del Arduino Uno (U1).
+- d = Segmento "D" conectado con una resistencia (R6) de 220 ohms al pin D7 (salida digital) del Arduino Uno (U1).
+- e = Segmento "E" conectado con una resistencia (R7) de 220 ohms al pin D6 (salida digital) del Arduino Uno (U1).
+- f = Segmento "F" conectado con una resistencia (R8) de 220 ohms al pin D5 (salida digital) del Arduino Uno (U1).
+- g = Segmento "G" conectado con una resistencia (R9) de 220 ohms al pin D4 (salida digital) del Arduino Uno (U1).
+- K = "Común" conectado a GND (tierra) del Arduino Uno (U1).
+
+##### PULSADORES:
+S3 = Utiliza una configuración pull down, es decir que al ser presionado la entrada analógica correspondiente detecta un cambio de voltaje. (HIGH/1) Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R10) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A0 (entrada analógica) del Arduino Uno (U1).
+S2 = Se utiliza una configuración pull down, al igual que en S3.
+Terminal 2b conectada a 5V del U1- Terminal 1b conectada con una resistencia (R11) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A1 (entrada analógica) del Arduino Uno (U1).
+S1 = Se utiliza una configuración pull down, al igual que en S3. Terminal 2b conectada a 5V del U1 - Terminal 1b conectada con una resistencia (R12) de 220 ohms a GND (tierra) del U1 - Terminal 1a conectada al pin A2 (entrada analógica) del Arduino Uno (U1).
+
 ## Función principal
 
 El código hace uso de varias funciones para controlar el visualizador 7 segmentos, las leds y los pulsadores. La función cambiarEstadoMontacargas se encarga de cambiar el estado del montacargas al presionar el pulsador correspondiente, además de mostrar en pantalla el estado actual del montacargas.
@@ -80,7 +107,7 @@ void cambiarEstadoMontacargas()
 ~~~
 ### Otras Funciones
 
-La función subirBajarPisos se encarga de aumentar un piso si es que el usuario presiono el pulsador para subir, restar un piso si es que presiono el pulsador para bajar o pausar el sistema si es que ya llegó al ultimo o primer piso.
+La función subirBajarPisos se encarga de incrementar o decrementar el valor del piso actual (piso) dependiendo del estado del sistema. Si el montacargas está subiendo y no llegó al piso máximo el piso se incrementa, si el montacargas está bajando y no llegó al piso mínimo el piso se decrementa. Si no se cumplen estas opciones quiere decir que se llegó al piso máximo o mínimo entonces pausa el montacargas y muestra el mensaje por el serial.
 
 ~~~ C (lenguaje en el que esta escrito)
 void subirBajarPisos()
@@ -104,7 +131,7 @@ void subirBajarPisos()
 }
 ~~~
 
-La función permitirCambioPisosPorTiempo se encarga de aplicar un delay del tiempo pasado por parametro, en este caso el trayecto entre pisos va a ser de 3000 ms pero lo hace manualmente está función, para que pueda leer en cualquier momento de ejecución del programa que el pulsador se haya pulsado, para ello también hace llamado a la función cambiarEstadoMontacargas, para que durante todo ese tiempo este leyendo si se presiona algún pulsador o no. 
+La función permitirCambioPisosPorTiempo permite cambiar de piso cada cierto intervalo de tiempo, el pasado por parámetro, en este caso el trayecto entre pisos va a ser de 3000 ms. Para que pueda leer en cualquier momento de ejecución del programa que el pulsador se haya pulsado, se hace uso del ciclo for, para cada intervalo de 50 ms, chequear si se presionó algún pulsador, para ello se hace llamado a la función cambiarEstadoMontacargas.
 
 ~~~ C (lenguaje en el que esta escrito)
 void permitirCambioPisosPorTiempo(int tiempo)
@@ -167,7 +194,7 @@ void apagarLed(int led)
 }
 ~~~
 
-La funcion encenderOApagarLedsSieteSegmentos controla todo el visualizados siete segmentos, pasandole por parametros las 7 secciones / 7 leds, pudiendo escribir con un HIGH/1 o LOW/0 si quiero que esa respectiva led este prendida o apagada.
+La funcion encenderOApagarLedsSieteSegmentos controla todo el visualizador siete segmentos, pasandole por parámetros las 7 secciones / 7 leds, pudiendo escribir con un HIGH/1 o LOW/0 si quiero que esa respectiva led este prendida o apagada.
 
 ~~~ C (lenguaje en el que esta escrito)
 void encenderOApagarLedsSieteSegmentos(int a, int b, int c, int d, int e, int f, int g)
@@ -182,7 +209,7 @@ void encenderOApagarLedsSieteSegmentos(int a, int b, int c, int d, int e, int f,
 }
 ~~~
 
-La función mostrarPisoVisualizador recibe el piso actual en el que se encuentra y enciende el visualizador 7 segmentos con el respectivo número de piso.
+La función mostrarPisoVisualizador recibe el piso actual en el que se encuentra y enciende el visualizador 7 segmentos mostrando el respectivo número de piso.
 
 ~~~ C (lenguaje en el que esta escrito)
 void mostrarPisoVisualizador(int piso)
@@ -242,9 +269,9 @@ void mostrarPisoVisualizador(int piso)
 }
 ~~~
 
-En el loop principal del código si el sistema está pausado la led roja se prende y la led verde se apaga, con sus respectivas funciones prenderLed y apagarLed, en caso de que el sistema no se encuentre pausado se llama a la función subirBajarPisos, la cual se encarga de aumentar el contador de pisos por uno si está subiendo o disminuirlo por uno si está bajando, y si llega al último o primer piso pausarlo, luego se vuelve a preguntar si el sistema se encuentra pausado, por esto último, y si no se encuentra pausado se prende la luz verde y apaga la roja.
-Luego se hace uso de la función mostrarPisoVisualizador para mostrar en que piso se encuentra.
-Por último hace uso de la función permitirCambioPisosPorTiempo para aplicar el tiempo de trayecto por piso, dentro de ella llamando a la función cambiarEstadoMontacargas, para saber en todo momento si se hace presión de algún pulsador, para delimitar si el montacargas debe subir, bajar o pausarse.
+En el loop principal del código si el sistema está pausado la led roja se prende y la led verde se apaga, con sus respectivas funciones prenderLed y apagarLed, en caso de que el sistema no se encuentre pausado se llama a la función subirBajarPisos, la cual se encarga de incrementar o decrementar el valor del piso actual (piso) dependiendo del estado del sistema. Si el montacargas está subiendo y no llegó al piso máximo el piso se incrementa, si el montacargas está bajando y no llegó al piso mínimo el piso se decrementa. Si no se cumplen estas opciones quiere decir que se llego al piso máximo o mínimo entonces pausa el montacargas y muestra el mensaje por el serial, por esto último despues se vuelve a preguntar si no sigue pausado el montacargas, si no se encuentra pausado se prende la luz verde y apaga la roja.
+Luego se hace uso de la función mostrarPisoVisualizador para mostrar el piso actual en el que se encuentra.
+Por último se hace uso de la función permitirCambioPisosPorTiempo para aplicar el tiempo de trayecto por piso, dentro de ella llamando a la función cambiarEstadoMontacargas, para saber en todo momento si se hace presión de algún pulsador, para delimitar si el montacargas debe subir, bajar o pausarse.
 
 ~~~ C (lenguaje en el que esta escrito)
 void loop()
