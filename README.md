@@ -268,25 +268,77 @@ void mostrarPisoVisualizador(int piso)
 }
 ~~~
 
-En el loop principal del código si el sistema está pausado la led roja se prende y la led verde se apaga, con sus respectivas funciones prenderLed y apagarLed, en caso de que el sistema no se encuentre pausado se llama a la función subirBajarPisos, la cual se encarga de incrementar o decrementar el valor del piso actual (piso) dependiendo del estado del sistema. Si el montacargas está subiendo y no llegó al piso máximo el piso se incrementa, si el montacargas está bajando y no llegó al piso mínimo el piso se decrementa. Si no se cumplen estas opciones quiere decir que se llego al piso máximo o mínimo entonces pausa el montacargas y muestra el mensaje por el serial, por esto último despues se vuelve a preguntar si no sigue pausado el montacargas, si no se encuentra pausado se prende la luz verde y apaga la roja.
+### Funciones agregadas en parcial:
+
+La funcion hacerFuncionarAscensorSiEsDeDia hace eso, solo si es de dia el ascensor funciona si no se apaga. La función moverServoFlexionSiElMontacargasEstaPausado permite mover el servo mediante el sensor de flexion solo si el montacargas está pausado.
+~~~ C (lenguaje en el que esta escrito)
+void hacerFuncionarAscensorSiEsDeDia(int fotorresistencia)
+{
+  int valorFotorresistencia = analogRead(fotorresistencia);
+  
+  while(valorFotorresistencia < 500)
+  {
+    esDeDia = false;
+    Serial.println("Es de noche, ascensor sin funcionamiento hasta que sea de dia");
+  	apagarLed(LED_ROJO);
+    apagarLed(LED_VERDE);
+    sistemaPausado = true;
+    encenderOApagarLedsSieteSegmentos(0,0,0,0,0,0,0);
+    valorFotorresistencia = analogRead(fotorresistencia);
+  }
+  
+  if(esDeDia == false)
+  {
+    Serial.println("Es de dia, ascensor en funcionamiento");
+    esDeDia = true;
+  }
+}
+
+void moverServoFlexionSiElMontacargasEstaPausado()
+{
+  int valorSensorFlexion = analogRead(SENSOR_FLEXION);
+  
+  if(valorSensorFlexion >= 800 && valorSensorFlexion <= 900)
+  {
+        int grados = map(valorSensorFlexion, 800, 900, 0, 180);
+        Serial.println("Se mueve el servo entre 0 y 180 grados");
+        myServo.write(grados);
+  }
+  else if(valorSensorFlexion > 900)
+  {
+        myServo.write(180);
+        Serial.println("Servo en 180 grados");
+  }
+  else
+  {
+        myServo.write(0);
+        Serial.println("Servo en posicion original");
+  }
+}
+~~~
+En el loop principal del código si es de dia deja funcionar todo el resto de cosas, si el sistema está pausado la led roja se prende y la led verde se apaga, con sus respectivas funciones prenderLed y apagarLed y permite mover el servo, en caso de que el sistema no se encuentre pausado se llama a la función subirBajarPisos, la cual se encarga de incrementar o decrementar el valor del piso actual (piso) dependiendo del estado del sistema. Si el montacargas está subiendo y no llegó al piso máximo el piso se incrementa, si el montacargas está bajando y no llegó al piso mínimo el piso se decrementa. Si no se cumplen estas opciones quiere decir que se llego al piso máximo o mínimo entonces pausa el montacargas y muestra el mensaje por el serial, por esto último despues se vuelve a preguntar si no sigue pausado el montacargas, si no se encuentra pausado se prende la luz verde y apaga la roja.
 Luego se hace uso de la función mostrarPisoVisualizador para mostrar el piso actual en el que se encuentra.
 Por último se hace uso de la función permitirCambioPisosPorTiempo para aplicar el tiempo de trayecto por piso, dentro de ella llamando a la función cambiarEstadoMontacargas, para saber en todo momento si se hace presión de algún pulsador, para delimitar si el montacargas debe subir, bajar o pausarse.
 
 ~~~ C (lenguaje en el que esta escrito)
 void loop()
 { 
+  
+    hacerFuncionarAscensorSiEsDeDia(FOTORRESISTENCIA);
+  
     if(sistemaPausado == true)
     {
         prenderLed(LED_ROJO);
         apagarLed(LED_VERDE);
+        moverServoFlexionSiElMontacargasEstaPausado();
     }
     else
     {
-       subirBajarPisos();
+        subirBajarPisos();
         if(sistemaPausado == false)
         {
-            prenderLed(LED_VERDE);
-            apagarLed(LED_ROJO);
+        prenderLed(LED_VERDE);
+        apagarLed(LED_ROJO);
         }
     }
     

@@ -8,6 +8,10 @@
 // desde diferentes pisos y muestre el estado actual del montacargas en el display 7
 // segmentos.
 
+#include <Servo.h>
+
+Servo myServo;
+
 #define LED_ROJO 12
 #define LED_VERDE 11
 #define LED_A 10
@@ -20,6 +24,8 @@
 #define PULSADOR_SUBIR A0
 #define PULSADOR_PAUSAR A1
 #define PULSADOR_BAJAR A2
+#define FOTORRESISTENCIA A3
+#define SENSOR_FLEXION A4
 
 int piso = 0;
 bool sistemaPausado = true;
@@ -27,7 +33,7 @@ bool sistemaSubiendo = false;
 bool sistemaBajando = false;
 bool ledRojoPrendido = false;
 bool ledVerdePrendido = false;
-
+bool esDeDia = false;
 void setup()
 {
     pinMode(LED_ROJO, OUTPUT);
@@ -42,15 +48,20 @@ void setup()
     pinMode(LED_E, OUTPUT);
     pinMode(LED_F, OUTPUT);
     pinMode(LED_G, OUTPUT);
+    myServo.attach(3, 500, 2500);
     Serial.begin(9600);
 }
 
 void loop()
-{   
+{ 
+    
+    hacerFuncionarAscensorSiEsDeDia(FOTORRESISTENCIA);
+
     if(sistemaPausado == true)
     {
         prenderLed(LED_ROJO);
         apagarLed(LED_VERDE);
+        moverServoFlexionSiElMontacargasEstaPausado();
     }
     else
     {
@@ -68,6 +79,50 @@ void loop()
     permitirCambioPisosPorTiempo(3000);
 }
 
+void hacerFuncionarAscensorSiEsDeDia(int fotorresistencia)
+{
+    int valorFotorresistencia = analogRead(fotorresistencia);
+    
+    while(valorFotorresistencia < 500)
+    {
+        esDeDia = false;
+        Serial.println("Es de noche, ascensor sin funcionamiento hasta que sea de dia");
+        apagarLed(LED_ROJO);
+        apagarLed(LED_VERDE);
+        sistemaPausado = true;
+        encenderOApagarLedsSieteSegmentos(0,0,0,0,0,0,0);
+        valorFotorresistencia = analogRead(fotorresistencia);
+    }
+  
+    if(esDeDia == false)
+    {
+        Serial.println("Es de dia, ascensor en funcionamiento");
+        esDeDia = true;
+    }
+}
+
+void moverServoFlexionSiElMontacargasEstaPausado()
+{
+    int valorSensorFlexion = analogRead(SENSOR_FLEXION);
+    
+    if(valorSensorFlexion >= 800 && valorSensorFlexion <= 900)
+    {
+        int grados = map(valorSensorFlexion, 800, 900, 0, 180);
+        Serial.println("Se mueve el servo entre 0 y 180 grados");
+        myServo.write(grados);
+    }
+    else if(valorSensorFlexion > 900)
+    {
+        myServo.write(180);
+        Serial.println("Servo en 180 grados");
+    }
+    else
+    {
+        myServo.write(0);
+        Serial.println("Servo en posicion original");
+    }
+}
+
 void cambiarEstadoMontacargas()
 {
     int estadoPulsadorSubir = digitalRead(PULSADOR_SUBIR); 
@@ -78,7 +133,7 @@ void cambiarEstadoMontacargas()
     {
         if(sistemaPausado == false)
         {
-            Serial.println("MONTACARGAS PAUSADO");
+        Serial.println("MONTACARGAS PAUSADO");
         }
         sistemaSubiendo = false;
         sistemaBajando = false;
@@ -203,53 +258,53 @@ void mostrarPisoVisualizador(int piso)
     switch(piso)
     {
         case 0: 
-            Serial.println("0");
-            encenderOApagarLedsSieteSegmentos(1,1,1,1,1,1,0);
+        Serial.println("0");
+        encenderOApagarLedsSieteSegmentos(1,1,1,1,1,1,0);
         break;
         
         case 1:
-            Serial.println("1");
-            encenderOApagarLedsSieteSegmentos(0,1,1,0,0,0,0);
+        Serial.println("1");
+        encenderOApagarLedsSieteSegmentos(0,1,1,0,0,0,0);
         break;
         
         case 2:
-            Serial.println("2");
-            encenderOApagarLedsSieteSegmentos(1,1,0,1,1,0,1);
+        Serial.println("2");
+        encenderOApagarLedsSieteSegmentos(1,1,0,1,1,0,1);
         break;
-
+        
         case 3:
-            Serial.println("3");
-            encenderOApagarLedsSieteSegmentos(1,1,1,1,0,0,1);
+        Serial.println("3");
+        encenderOApagarLedsSieteSegmentos(1,1,1,1,0,0,1);
         break;
         
         case 4:
-            Serial.println("4");
-            encenderOApagarLedsSieteSegmentos(0,1,1,0,0,1,1);
+        Serial.println("4");
+        encenderOApagarLedsSieteSegmentos(0,1,1,0,0,1,1);
         break;
         
         case 5:
-            Serial.println("5");
-            encenderOApagarLedsSieteSegmentos(1,0,1,1,0,1,1);
+        Serial.println("5");
+        encenderOApagarLedsSieteSegmentos(1,0,1,1,0,1,1);
         break;
         
         case 6:
-            Serial.println("6");
-            encenderOApagarLedsSieteSegmentos(1,0,1,1,1,1,1);
+        Serial.println("6");
+        encenderOApagarLedsSieteSegmentos(1,0,1,1,1,1,1);
         break;
         
         case 7:
-            Serial.println("7");
-            encenderOApagarLedsSieteSegmentos(1,1,1,0,0,0,0);
+        Serial.println("7");
+        encenderOApagarLedsSieteSegmentos(1,1,1,0,0,0,0);
         break;
         
         case 8:
-            Serial.println("8");
-            encenderOApagarLedsSieteSegmentos(1,1,1,1,1,1,1);
+        Serial.println("8");
+        encenderOApagarLedsSieteSegmentos(1,1,1,1,1,1,1);
         break;
         
         case 9:
-            Serial.println("9");
-            encenderOApagarLedsSieteSegmentos(1,1,1,0,0,1,1);
+        Serial.println("9");
+        encenderOApagarLedsSieteSegmentos(1,1,1,0,0,1,1);
         break;
     }
 }
